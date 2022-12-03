@@ -1,0 +1,13 @@
+bases:
+- ../base
+
+commonLabels:
+  app: patty
+
+namePrefix: patty-
+namespace: bouvier
+
+configMapGenerator:
+- name: container-helper-yaml
+  files:
+  - container-helper.yaml

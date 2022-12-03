@@ -1,43 +1,34 @@
-hkex --> marco,bill
-rhhk --> johnny,peter
-
-hkex --> marco,bill
-rhhk --> johnny,peter
-
-apps.ocp4x-1.ray-hklab.com
-apps.hkexpoc.redhathk.com
-
 **************** Deploy demo environment
-oc new-project hkex
-oc new-app quay.io/openshift-examples/simple-http-server:micro --name marco
-oc create route edge marco --service=marco
-oc new-app quay.io/openshift-examples/simple-http-server:micro --name bill
-oc create route edge bill --service=bill
+oc new-project bouvier
+oc new-app quay.io/openshift-examples/simple-http-server:micro --name patty
+oc create route edge patty --service=patty
+oc new-app quay.io/openshift-examples/simple-http-server:micro --name selma
+oc create route edge selma --service=selma
 
-oc new-project rhhk
-oc new-app quay.io/openshift-examples/simple-http-server:micro --name johnny
-oc create route edge johnny --service=johnny
+oc new-project simpson
+oc new-app quay.io/openshift-examples/simple-http-server:micro --name homer
+oc create route edge homer --service=homer
 
-oc new-app quay.io/openshift-examples/simple-http-server:micro --name peter
-oc create route edge peter --service=peter
+oc new-app quay.io/openshift-examples/simple-http-server:micro --name marge
+oc create route edge marge --service=marge
 
 **************** Download some helper scripts
 git clone https://github.com/Red-Hat-Hong-Kong/network-policies-tests.git
 cd network-policies-tests/
 
-**************** Run connection overview 'apps.hkexpoc.redhathk.com'
+**************** Run connection overview
 ./run-tmux.sh apps.<cluster_name>.<base_domain>
 
 **************** Discover the environment
-oc get netnamespaces | grep -E '(NAME|rhhk|hkex|default|openshift-ingress)'
-oc get pods -o wide -n rhhk
-oc get pods -o wide -n hkex
+oc get netnamespaces | grep -E '(NAME|simpson|bouvier|default|openshift-ingress)'
+oc get pods -o wide -n simpson
+oc get pods -o wide -n bouvier
 
 **************** Every one can connect to each other
 ./OpenShiftSDN/dump-net.sh --all case0
 
-**************** Case 1 - rhhk - default-deny
-oc create -n rhhk  -f - <<EOF
+**************** Case 1 - Simpson - default-deny
+oc create -n simpson  -f - <<EOF
 kind: NetworkPolicy
 apiVersion: networking.k8s.io/v1
 metadata:
@@ -49,7 +40,7 @@ EOF
 ./OpenShiftSDN/dump-net.sh master-0 master-0.case1
 diff -Nuar case0.2020-12-29-08-43-00.1609227780.master-0.OpenFlow13 master-0.case1.OpenFlow13
 
-**************** Case 2 - rhhk allow from openshift-ingress namespaces, because of router
+**************** Case 2 - Simpson allow from openshift-ingress namespaces, because of router
 cat << EOF| oc create -f -
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -71,7 +62,7 @@ oc label namespace default 'network.openshift.io/policy-group=ingress'
 ./OpenShiftSDN/dump-net.sh master-0 master-0.case2
 diff -Nuar master-0.case1.master-0.OpenFlow13 master-0.case2.master-0.OpenFlow13
 
-**************** Case 3 - rhhk allow internal communcation
+**************** Case 3 - Simpson allow internal communcation
 cat << EOF| oc create -f -
 kind: NetworkPolicy
 apiVersion: networking.k8s.io/v1
@@ -87,30 +78,30 @@ EOF
 ./OpenShiftSDN/dump-net.sh master-0 master-0.case3
 diff -Nuar master-0.case2.master-0.OpenFlow13 master-0.case3.master-0.OpenFlow13
 
-**************** Case 4 - bill and marco want's to talk with peter!
-oc label namespace/hkex name=hkex
+**************** Case 4 - Selma and Patty want's to talk with Marge!
+oc label namespace/bouvier name=bouvier
 
-oc create -n rhhk -f - <<EOF
+oc create -n simpson -f - <<EOF
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: allow-from-hkexs-to-peter
+  name: allow-from-bouviers-to-marge
 spec:
   podSelector:
     matchLabels:
-      deployment: peter
+      deployment: marge
   ingress:
   - from:
     - namespaceSelector:
         matchLabels:
-          name: hkex
+          name: bouvier
 EOF
 
 ./OpenShiftSDN/dump-net.sh master-0 master-0.case4
 diff -Nuar master-0.case3.master-0.OpenFlow13 master-0.case4.master-0.OpenFlow13
 
 **************** Case Bonus - one EgressNetworkPolicy
-oc create -n rhhk -f - <<EOF
+oc create -n simpson -f - <<EOF
 apiVersion: network.openshift.io/v1
 kind: EgressNetworkPolicy
 metadata:

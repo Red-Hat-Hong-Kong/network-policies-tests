@@ -1,0 +1,14 @@
+bases:
+- ../base
+
+commonLabels:
+  app: marge
+
+namePrefix: marge-
+namespace: simpson
+
+configMapGenerator:
+- name: container-helper-yaml
+  files:
+  - container-helper.yaml
+

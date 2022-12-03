@@ -1,0 +1,13 @@
+bases:
+- ../base
+
+commonLabels:
+  app: selma
+
+namePrefix: selma-
+namespace: bouvier
+
+configMapGenerator:
+- name: container-helper-yaml
+  files:
+  - container-helper.yaml
