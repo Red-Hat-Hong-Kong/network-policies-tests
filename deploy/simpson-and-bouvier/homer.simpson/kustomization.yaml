@@ -2,10 +2,10 @@ bases:
 - ../base
 
 commonLabels:
-  app: homer
+  app: johnny
 
-namePrefix: homer-
-namespace: simpson
+namePrefix: johnny-
+namespace: rhhk
 
 configMapGenerator:
 - name: container-helper-yaml

@@ -2,10 +2,10 @@ bases:
 - ../base
 
 commonLabels:
-  app: selma
+  app: bill
 
-namePrefix: selma-
-namespace: bouvier
+namePrefix: bill-
+namespace: hkex
 
 configMapGenerator:
 - name: container-helper-yaml

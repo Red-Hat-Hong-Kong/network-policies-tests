@@ -1,11 +1,11 @@
-# Simpson & Bouvier network policy demo env
+# rhhk & hkex network policy demo env
 
 ## Deploy
 ```bash
-oc new-project simpson
-oc apply -k homer.simpson
-oc apply -k marge.simpson
-oc new-project bouvier
-oc apply -k patty.bouvier
-oc apply -k selma.bouvier
+oc new-project rhhk
+oc apply -k johnny.rhhk
+oc apply -k peter.rhhk
+oc new-project hkex
+oc apply -k marco.hkex
+oc apply -k bill.hkex
 ```

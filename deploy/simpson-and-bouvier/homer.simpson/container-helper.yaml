@@ -1,13 +1,13 @@
 ---
-response: "Homer"
+response: "johnny"
 tcpchecks:
-  - name: marge.simpson
-    host: marge-service.simpson
+  - name: peter.rhhk
+    host: peter-service.rhhk
     port: 8080
-  - name: selma.bouvier
-    host: selma-service.bouvier
+  - name: bill.hkex
+    host: bill-service.hkex
     port: 8080
-  - name: patty.bouvier
-    host: patty-service.bouvier
+  - name: marco.hkex
+    host: marco-service.hkex
     port: 8080
 

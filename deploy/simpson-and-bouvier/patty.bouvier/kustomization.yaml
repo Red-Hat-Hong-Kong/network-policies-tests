@@ -2,10 +2,10 @@ bases:
 - ../base
 
 commonLabels:
-  app: patty
+  app: marco
 
-namePrefix: patty-
-namespace: bouvier
+namePrefix: marco-
+namespace: hkex
 
 configMapGenerator:
 - name: container-helper-yaml

@@ -1,0 +1,137 @@
+hkex --> marco,bill
+rhhk --> johnny,peter
+
+hkex --> marco,bill
+rhhk --> johnny,peter
+
+apps.ocp4x-1.ray-hklab.com
+apps.hkexpoc.redhathk.com
+
+**************** Deploy demo environment
+oc new-project hkex
+oc new-app quay.io/openshift-examples/simple-http-server:micro --name marco
+oc create route edge marco --service=marco
+oc new-app quay.io/openshift-examples/simple-http-server:micro --name bill
+oc create route edge bill --service=bill
+
+oc new-project rhhk
+oc new-app quay.io/openshift-examples/simple-http-server:micro --name johnny
+oc create route edge johnny --service=johnny
+
+oc new-app quay.io/openshift-examples/simple-http-server:micro --name peter
+oc create route edge peter --service=peter
+
+**************** Download some helper scripts
+git clone https://github.com/Red-Hat-Hong-Kong/network-policies-tests.git
+cd network-policies-tests/
+
+**************** Run connection overview 'apps.hkexpoc.redhathk.com'
+./run-tmux.sh apps.<cluster_name>.<base_domain>
+
+**************** Discover the environment
+oc get netnamespaces | grep -E '(NAME|rhhk|hkex|default|openshift-ingress)'
+oc get pods -o wide -n rhhk
+oc get pods -o wide -n hkex
+
+**************** Every one can connect to each other
+./OpenShiftSDN/dump-net.sh --all case0
+
+**************** Case 1 - rhhk - default-deny
+oc create -n rhhk  -f - <<EOF
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: default-deny
+spec:
+  podSelector: {}
+EOF
+
+./OpenShiftSDN/dump-net.sh master-0 master-0.case1
+diff -Nuar case0.2020-12-29-08-43-00.1609227780.master-0.OpenFlow13 master-0.case1.OpenFlow13
+
+**************** Case 2 - rhhk allow from openshift-ingress namespaces, because of router
+cat << EOF| oc create -f -
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-from-openshift-ingress
+spec:
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          network.openshift.io/policy-group: ingress
+  podSelector: {}
+  policyTypes:
+  - Ingress
+EOF
+
+oc label namespace default 'network.openshift.io/policy-group=ingress'
+
+./OpenShiftSDN/dump-net.sh master-0 master-0.case2
+diff -Nuar master-0.case1.master-0.OpenFlow13 master-0.case2.master-0.OpenFlow13
+
+**************** Case 3 - rhhk allow internal communcation
+cat << EOF| oc create -f -
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: allow-same-namespace
+spec:
+  podSelector:
+  ingress:
+  - from:
+    - podSelector: {}
+EOF
+
+./OpenShiftSDN/dump-net.sh master-0 master-0.case3
+diff -Nuar master-0.case2.master-0.OpenFlow13 master-0.case3.master-0.OpenFlow13
+
+**************** Case 4 - bill and marco want's to talk with peter!
+oc label namespace/hkex name=hkex
+
+oc create -n rhhk -f - <<EOF
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-from-hkexs-to-peter
+spec:
+  podSelector:
+    matchLabels:
+      deployment: peter
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: hkex
+EOF
+
+./OpenShiftSDN/dump-net.sh master-0 master-0.case4
+diff -Nuar master-0.case3.master-0.OpenFlow13 master-0.case4.master-0.OpenFlow13
+
+**************** Case Bonus - one EgressNetworkPolicy
+oc create -n rhhk -f - <<EOF
+apiVersion: network.openshift.io/v1
+kind: EgressNetworkPolicy
+metadata:
+  name: default
+spec:
+  egress:
+  - to:
+      cidrSelector: 1.2.3.0/24
+    type: Allow
+  - to:
+      dnsName: www.foo.com
+    type: Allow
+  - to:
+      cidrSelector: 0.0.0.0/0
+    type: Deny
+EOF
+
+./OpenShiftSDN/dump-net.sh master-0 master-0.case5
+diff -Nuar master-0.case4.master-0.OpenFlow13 master-0.case5.master-0.OpenFlow13
+
+**************** Destroy demo env
+oc delete project rhhk hkex
+
+
