@@ -1,15 +1,14 @@
 **************** Deploy demo environment
 oc new-project hkex
-oc new-app quay.io/openshift-examples/simple-http-server:micro --name marco
+oc new-app quay.io/tyip/simple-http-server:micro --name marco
 oc create route edge marco --service=marco
-oc new-app quay.io/openshift-examples/simple-http-server:micro --name bill
+oc new-app quay.io/tyip/simple-http-server:micro --name bill
 oc create route edge bill --service=bill
 
 oc new-project rhhk
-oc new-app quay.io/openshift-examples/simple-http-server:micro --name johnny
+oc new-app quay.io/tyip/simple-http-server:micro --name johnny
 oc create route edge johnny --service=johnny
-
-oc new-app quay.io/openshift-examples/simple-http-server:micro --name peter
+oc new-app quay.io/tyip/simple-http-server:micro --name peter
 oc create route edge peter --service=peter
 
 **************** Download some helper scripts
@@ -18,6 +17,8 @@ cd network-policies-tests/
 
 **************** Run connection overview
 ./run-tmux.sh apps.<cluster_name>.<base_domain>
+apps.ocp4x-1.ray-hklab.com
+apps.hkexpoc.redhathk.com
 
 **************** Discover the environment
 oc get netnamespaces | grep -E '(NAME|rhhk|hkex|default|openshift-ingress)'
