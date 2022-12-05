@@ -42,7 +42,7 @@ EOF
 diff -Nuar case0.2020-12-29-08-43-00.1609227780.master-0.OpenFlow13 master-0.case1.OpenFlow13
 
 **************** Case 2 - rhhk allow from openshift-ingress namespaces, because of router
-cat << EOF| oc create -f -
+oc create -f - <<EOF
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -64,7 +64,7 @@ oc label namespace default 'network.openshift.io/policy-group=ingress'
 diff -Nuar master-0.case1.master-0.OpenFlow13 master-0.case2.master-0.OpenFlow13
 
 **************** Case 3 - rhhk allow internal communcation
-cat << EOF| oc create -f -
+oc create -n rhhk -f - <<EOF
 kind: NetworkPolicy
 apiVersion: networking.k8s.io/v1
 metadata:
